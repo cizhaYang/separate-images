@@ -317,12 +317,17 @@ body {
 
 .image-stage {
   position: relative;
+  justify-self: center;
+  align-self: center;
+  width: max-content;
   max-width: 100%;
   max-height: calc(100vh - 188px);
+  line-height: 0;
 }
 
 .image-stage img {
   display: block;
+  margin: 0 auto;
   max-width: 100%;
   max-height: calc(100vh - 188px);
   border-radius: 4px;

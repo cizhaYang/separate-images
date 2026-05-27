@@ -168,40 +168,110 @@ export default function App() {
     splitDirection === 'vertical'
       ? { left: `${splitRatio * 100}%` }
       : { top: `${splitRatio * 100}%` };
+  const splitPercent = Math.round(splitRatio * 100);
+  const fileSize = sourceFile ? formatFileSize(sourceFile.size) : '等待上传';
+  const firstOutput =
+    imageSize.width > 0
+      ? getOutputSizeLabel(imageSize.width, imageSize.height, splitDirection, splitRatio, 'first')
+      : '待计算';
+  const secondOutput =
+    imageSize.width > 0
+      ? getOutputSizeLabel(imageSize.width, imageSize.height, splitDirection, splitRatio, 'second')
+      : '待计算';
 
   return (
     <main className="app-shell">
       <section className="tool-panel" aria-label="图片分割工具">
-        <header className="app-header">
-          <div>
+        <aside className="control-rail">
+          <header className="app-header">
+            <span className="eyebrow">Image Split Studio</span>
             <h1>图片分割工具</h1>
-            <p>上传单张图片，拖动分割线后导出两张图片。</p>
-          </div>
-        </header>
+            <p>上传单张图片，拖动分割线或精确输入比例后，一次导出两张图片。</p>
+          </header>
 
-        <div className="toolbar">
-          <div className="segmented-control" aria-label="分割方向">
-            <button
-              aria-pressed={splitDirection === 'vertical'}
-              className={splitDirection === 'vertical' ? 'active' : ''}
-              onClick={() => setSplitDirection('vertical')}
-              type="button"
-            >
-              竖直分割
-            </button>
-            <button
-              aria-pressed={splitDirection === 'horizontal'}
-              className={splitDirection === 'horizontal' ? 'active' : ''}
-              onClick={() => setSplitDirection('horizontal')}
-              type="button"
-            >
-              水平分割
-            </button>
+          <label
+            className={`upload-card ${sourceUrl ? 'compact' : ''}`}
+            onDragOver={handleFileDragOver}
+            onDrop={handleDrop}
+          >
+            <span className="upload-icon" aria-hidden="true">+</span>
+            <span className="upload-title">{sourceFile ? '替换图片' : '上传图片'}</span>
+            <span className="upload-copy">拖入图片，或点击选择本地文件</span>
+            <input
+              aria-label="选择图片文件"
+              accept="image/*"
+              onChange={handleFileInputChange}
+              type="file"
+            />
+          </label>
+
+          <div className="control-card">
+            <div className="control-heading">
+              <span>分割方向</span>
+              <strong>{splitDirection === 'vertical' ? '左右输出' : '上下输出'}</strong>
+            </div>
+            <div className="segmented-control" aria-label="分割方向">
+              <button
+                aria-pressed={splitDirection === 'vertical'}
+                className={splitDirection === 'vertical' ? 'active' : ''}
+                onClick={() => setSplitDirection('vertical')}
+                type="button"
+              >
+                竖直分割
+              </button>
+              <button
+                aria-pressed={splitDirection === 'horizontal'}
+                className={splitDirection === 'horizontal' ? 'active' : ''}
+                onClick={() => setSplitDirection('horizontal')}
+                type="button"
+              >
+                水平分割
+              </button>
+            </div>
           </div>
 
-          <div className="split-readout">
-            <span>位置</span>
-            <strong>{Math.round(splitRatio * 100)}%</strong>
+          <div className="control-card">
+            <div className="control-heading">
+              <span>分割位置</span>
+              <strong>{splitPercent}%</strong>
+            </div>
+            <input
+              aria-label="分割位置"
+              className="ratio-slider"
+              max={MAX_SPLIT_RATIO * 100}
+              min={MIN_SPLIT_RATIO * 100}
+              onChange={(event) => setSplitRatio(Number(event.target.value) / 100)}
+              type="range"
+              value={splitPercent}
+            />
+            <div className="ratio-scale" aria-hidden="true">
+              <span>2%</span>
+              <span>50%</span>
+              <span>98%</span>
+            </div>
+          </div>
+
+          <div className="summary-grid" aria-label="图片信息">
+            <div>
+              <span>文件</span>
+              <strong>{sourceFile ? sourceFile.name : '未选择图片'}</strong>
+            </div>
+            <div>
+              <span>大小</span>
+              <strong>{fileSize}</strong>
+            </div>
+            <div>
+              <span>原始尺寸</span>
+              <strong>{imageSize.width > 0 ? `${imageSize.width} x ${imageSize.height}` : '待读取'}</strong>
+            </div>
+            <div>
+              <span>输出一</span>
+              <strong>{firstOutput}</strong>
+            </div>
+            <div>
+              <span>输出二</span>
+              <strong>{secondOutput}</strong>
+            </div>
           </div>
 
           <button
@@ -210,57 +280,69 @@ export default function App() {
             onClick={handleExport}
             type="button"
           >
-            确定保存
+            {exportStatus === 'processing' ? '正在生成...' : '确定保存'}
           </button>
-        </div>
+        </aside>
 
-        <div
-          className={`preview-area ${sourceUrl ? 'has-image' : ''}`}
-          onDragOver={handleFileDragOver}
-          onDrop={handleDrop}
-        >
-          {sourceUrl ? (
-            <div className="image-stage">
-              <img
-                alt="待分割预览"
-                draggable={false}
-                onLoad={(event) => {
-                  setImageSize({
-                    width: event.currentTarget.naturalWidth,
-                    height: event.currentTarget.naturalHeight,
-                  });
-                }}
-                ref={imageRef}
-                src={sourceUrl}
-              />
-              <button
-                aria-label="拖动分割线"
-                className={`split-line ${splitDirection} ${isDragging ? 'dragging' : ''}`}
-                onPointerDown={handleSplitPointerDown}
-                style={splitLineStyle}
-                type="button"
-              />
+        <section className="canvas-panel" aria-label="图片预览">
+          <div className="canvas-topbar">
+            <div>
+              <span>预览画布</span>
+              <strong>{statusMessage}</strong>
             </div>
-          ) : (
-            <label className="empty-state">
-              <p>将图片拖到这里，或点击上传图片。</p>
-              <input
-                aria-label="上传图片"
-                accept="image/*"
-                onChange={handleFileInputChange}
-                type="file"
-              />
-            </label>
-          )}
-        </div>
+            <span className={`status-pill ${exportStatus}`}>{sourceFile ? '可编辑' : '等待图片'}</span>
+          </div>
 
-        <footer className={`status-bar ${exportStatus}`}>
-          <span>
-            {sourceFile ? sourceFile.name : '未选择图片'}
-            {imageSize.width > 0 ? ` · ${imageSize.width} x ${imageSize.height}` : ''}
-          </span>
-          <strong>{statusMessage}</strong>
-        </footer>
+          <div
+            className={`preview-area ${sourceUrl ? 'has-image' : ''}`}
+            onDragOver={handleFileDragOver}
+            onDrop={handleDrop}
+          >
+            {sourceUrl ? (
+              <div className="image-stage">
+                <img
+                  alt="待分割预览"
+                  draggable={false}
+                  onLoad={(event) => {
+                    setImageSize({
+                      width: event.currentTarget.naturalWidth,
+                      height: event.currentTarget.naturalHeight,
+                    });
+                  }}
+                  ref={imageRef}
+                  src={sourceUrl}
+                />
+                <button
+                  aria-label="拖动分割线"
+                  className={`split-line ${splitDirection} ${isDragging ? 'dragging' : ''}`}
+                  onPointerDown={handleSplitPointerDown}
+                  style={splitLineStyle}
+                  type="button"
+                />
+              </div>
+            ) : (
+              <label className="empty-state">
+                <span className="empty-mark" aria-hidden="true" />
+                <strong>将图片拖到这里，或点击上传图片。</strong>
+                <span>支持 PNG、JPG、WebP 等浏览器可读取格式。</span>
+                <input
+                  aria-label="上传图片"
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                  type="file"
+                />
+              </label>
+            )}
+          </div>
+
+          <footer className={`status-bar ${exportStatus}`}>
+            <span>
+              {sourceFile ? sourceFile.name : '未选择图片'}
+              {imageSize.width > 0 ? ` · ${imageSize.width} x ${imageSize.height}` : ''}
+            </span>
+            <strong>{statusMessage}</strong>
+          </footer>
+        </section>
 
         {toastMessage ? (
           <div className="toast" role="status" aria-live="polite">
@@ -274,4 +356,36 @@ export default function App() {
 
 function clampRatio(value: number) {
   return Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, value));
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function getOutputSizeLabel(
+  width: number,
+  height: number,
+  direction: SplitDirection,
+  ratio: number,
+  part: 'first' | 'second',
+) {
+  if (direction === 'vertical') {
+    const firstWidth = Math.round(width * ratio);
+    const outputWidth = part === 'first' ? firstWidth : width - firstWidth;
+
+    return `${outputWidth} x ${height}`;
+  }
+
+  const firstHeight = Math.round(height * ratio);
+  const outputHeight = part === 'first' ? firstHeight : height - firstHeight;
+
+  return `${width} x ${outputHeight}`;
 }

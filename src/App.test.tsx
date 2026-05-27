@@ -80,6 +80,6 @@ describe('App', () => {
     });
 
     expect(await screen.findByAltText('待分割预览')).toBeInTheDocument();
-    expect(screen.getByText(/dropped-photo\.jpg/)).toBeInTheDocument();
+    expect(screen.getAllByText(/dropped-photo\.jpg/).length).toBeGreaterThan(0);
   });
 });

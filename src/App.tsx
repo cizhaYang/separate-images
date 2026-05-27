@@ -123,6 +123,7 @@ export default function App() {
 
   const handleSplitPointerDown = (event: PointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
     setIsDragging(true);
     updateRatioFromPointer(event.clientX, event.clientY);
   };
@@ -205,15 +206,6 @@ export default function App() {
             />
           </label>
 
-          <button
-            className="primary-action"
-            disabled={!sourceFile || exportStatus === 'processing'}
-            onClick={handleExport}
-            type="button"
-          >
-            {exportStatus === 'processing' ? '正在生成...' : '确定保存'}
-          </button>
-
           <div className="control-card">
             <div className="control-heading">
               <span>分割方向</span>
@@ -290,7 +282,16 @@ export default function App() {
               <span>预览画布</span>
               <strong>{statusMessage}</strong>
             </div>
-            <span className={`status-pill ${exportStatus}`}>{sourceFile ? '可编辑' : '等待图片'}</span>
+            <div className="canvas-actions">
+              <button
+                className="primary-action"
+                disabled={!sourceFile || exportStatus === 'processing'}
+                onClick={handleExport}
+                type="button"
+              >
+                {exportStatus === 'processing' ? '正在生成...' : '确定保存'}
+              </button>
+            </div>
           </div>
 
           <div

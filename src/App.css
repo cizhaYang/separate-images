@@ -250,7 +250,6 @@ body {
 
 .primary-action {
   width: 100%;
-  margin-top: auto;
   color: #ffffff;
   background: #207160;
   box-shadow: 0 14px 28px rgba(32, 113, 96, 0.24);
@@ -521,10 +520,6 @@ body {
   .control-rail {
     display: grid;
     grid-template-columns: 1fr;
-  }
-
-  .primary-action {
-    margin-top: 0;
   }
 
   .image-stage,

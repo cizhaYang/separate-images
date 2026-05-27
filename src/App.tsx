@@ -205,6 +205,15 @@ export default function App() {
             />
           </label>
 
+          <button
+            className="primary-action"
+            disabled={!sourceFile || exportStatus === 'processing'}
+            onClick={handleExport}
+            type="button"
+          >
+            {exportStatus === 'processing' ? '正在生成...' : '确定保存'}
+          </button>
+
           <div className="control-card">
             <div className="control-heading">
               <span>分割方向</span>
@@ -273,15 +282,6 @@ export default function App() {
               <strong>{secondOutput}</strong>
             </div>
           </div>
-
-          <button
-            className="primary-action"
-            disabled={!sourceFile || exportStatus === 'processing'}
-            onClick={handleExport}
-            type="button"
-          >
-            {exportStatus === 'processing' ? '正在生成...' : '确定保存'}
-          </button>
         </aside>
 
         <section className="canvas-panel" aria-label="图片预览">

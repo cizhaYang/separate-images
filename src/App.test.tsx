@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+import appCss from './App.css?raw';
 import { splitImageToBlobs } from './lib/imageSplit';
 import { saveExportedImages } from './lib/saveFiles';
 
@@ -81,5 +82,11 @@ describe('App', () => {
 
     expect(await screen.findByAltText('待分割预览')).toBeInTheDocument();
     expect(screen.getAllByText(/dropped-photo\.jpg/).length).toBeGreaterThan(0);
+  });
+
+  it('does not size the preview stage from the uploaded image intrinsic width', () => {
+    const imageStageRule = appCss.match(/\.image-stage\s*\{[^}]*\}/)?.[0] ?? '';
+
+    expect(imageStageRule).not.toContain('width: max-content');
   });
 });

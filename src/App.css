@@ -319,7 +319,7 @@ body {
   position: relative;
   justify-self: center;
   align-self: center;
-  width: max-content;
+  width: auto;
   max-width: 100%;
   max-height: calc(100vh - 188px);
   line-height: 0;
